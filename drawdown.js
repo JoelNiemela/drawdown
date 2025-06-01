@@ -29,7 +29,7 @@ function markdown(src) {
     }
 
     function element(tag, content) {
-        return '<' + tag + '>' + content + '</' + tag + '>';
+        return `<${tag}>${content}</${tag}>`;
     }
 
     function blockquote(src) {
@@ -103,8 +103,8 @@ function markdown(src) {
     replace(rx_link, (_all, _p1, p2, p3, p4, _p5, p6) => {
         stash[--si] = p4
             ? p2
-                ? '<img src="' + p4 + '" alt="' + p3 + '"/>'
-                : '<a href="' + p4 + '">' + unesc(highlight(p3)) + '</a>'
+                ? `<img src="${p4}" alt="${p3}"/>`
+                : `<a href="${p4}">` + unesc(highlight(p3)) + '</a>'
             : p6;
         return si + '\uf8ff';
     });
