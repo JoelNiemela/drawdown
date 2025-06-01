@@ -95,7 +95,7 @@ function markdown(src) {
 
     // inline code
     replace(rx_code_inline, (_all, _p1, p2) => {
-        stash[--si] = element('code', p2.replace(/[<>&]/g, (t) => { return "&" + {"<":"lt",">":"gt","&":"amp"}[t] + ";"; }));
+        stash[--si] = element('code', p2);
         return si + '\uf8ff';
     });
 
