@@ -119,8 +119,8 @@ To use:
   <div class="markdown"></div>
   <script type="text/javascript" src="drawdown.js"></script>
   <script type="text/javascript">
-    var ein = document.querySelector(".plain");
-    var eout = document.querySelector(".markdown");
+    const ein = document.querySelector(".plain");
+    const eout = document.querySelector(".markdown");
     function update() {
       eout.innerHTML = markdown(ein.value);
     }
