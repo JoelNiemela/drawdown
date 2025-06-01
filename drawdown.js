@@ -15,6 +15,7 @@
     var rx_list = /\n( *)(?:[*\-+]|((\d+)|([a-z])|[A-Z])[.)]) +([^]*?)(?=(\n|$){2})/g;
     var rx_listjoin = /<\/(ol|ul)>\n\n<\1>/g;
     var rx_highlight = /(^|[^A-Za-z\d\\])(([*_])|(~)|(\^)|(--)|(\+\+)|`)(\2?)([^<]*?)\2\8(?!\2)(?=\W|_|$)/g;
+    var rx_code_inline = /(`+)([^`].*?)\1/g;
     var rx_code = /\n((```|~~~).*\n?([^]*?)\n?\2|((    .*?\n)+))/g;
     var rx_link = /((!?)\[(.*?)\]\((.*?)( ".*")?\)|\\([\\`*_{}\[\]()#+\-.!~]))/g;
     var rx_table = /\n(( *\|.*?\| *\n)+)/g;
@@ -69,6 +70,13 @@
         return str.replace(rx_escape, '$1');
     }
 
+    function code_inline(src) {
+        return src.replace(rx_code_inline, function(all, p1, p2) {
+            stash[--si] = '<code>' + p2.replace(/[<>&]/g, function(t) { return "&" + {"<":"lt",">":"gt","&":"amp"}[t] + ";"; }) + '</code>';
+            return si + '\uf8ff';
+        });
+    }
+
     var stash = [];
     var si = 0;
 
@@ -93,6 +101,9 @@
         stash[--si] = element('pre', element('code', p3||p4.replace(/^    /gm, '')));
         return si + '\uf8ff';
     });
+
+    // inline code
+    src = code_inline(src);
 
     // link or image
     replace(rx_link, function(all, p1, p2, p3, p4, p5, p6) {
