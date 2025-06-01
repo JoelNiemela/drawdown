@@ -41,12 +41,12 @@ function markdown(src) {
     function list(src) {
         return src.replace(rx_list, (_all, ind, ol, num, low, content) => {
             const entry = element('li', highlight(content.split(
-                RegExp('\n ?' + ind + '(?:(?:\\d+|[a-zA-Z])[.)]|[*\\-+]) +', 'g')).map(list).join('</li><li>')));
+                RegExp(`\n ?${ind}(?:(?:\\d+|[a-zA-Z])[.)]|[*\\-+]) +`, 'g')).map(list).join('</li><li>')));
 
             return '\n' + (ol
                 ? '<ol start="' + (num
                     ? ol + '">'
-                    : parseInt(ol,36) - 9 + '" style="list-style-type:' + (low ? 'low' : 'upp') + 'er-alpha">') + entry + '</ol>'
+                    : parseInt(ol, 36) - 9 + '" style="list-style-type:' + (low ? 'low' : 'upp') + 'er-alpha">') + entry + '</ol>'
                 : element('ul', entry));
         });
     }
@@ -104,7 +104,7 @@ function markdown(src) {
             p4
                 ? p2
                     ? `<img src="${p4}" alt="${p3}"/>`
-                    : `<a href="${p4}">` + unesc(highlight(p3)) + '</a>'
+                    : `<a href="${p4}">${unesc(highlight(p3))}</a>`
                 : p6
         );
     });
