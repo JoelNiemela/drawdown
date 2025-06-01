@@ -35,20 +35,28 @@ function markdown(src) {
         });
     }
 
+    function md_tag_rx(tag) {
+        return RegExp.escape(`${tag[0]}`);
+    }
+
     const md_tags = {
-        '*': 'em',
-        '_': 'em',
         '**': 'strong',
         '__': 'strong',
-        '~': 'sub',
+        '*': 'em',
+        '_': 'em',
         '~~': 's',
+        '~': 'sub',
         '^': 'sup',
         '--': 'small',
         '++': 'big',
     };
-    const rx_highlight = RegExp(`(^|[^A-Za-z\\d\\\\])(${Object.keys(md_tags).map(RegExp.escape).join('|')})([^<]*?)\\2(?!\\2)(?=\\W|_|$)`, 'g');
+    const rx_highlight = RegExp(`(^|[^A-Za-z\\d\\\\])((${Object.keys(md_tags).map(md_tag_rx).join('|')})(\\3?))([^<]*?)\\2(?!\\3)(?=\\W|_|$)`, 'g');
     function highlight(src) {
-        return src.replace(rx_highlight, (_all, _, p, content) => _ + element(md_tags[p], { content: highlight(content) }));
+        return src.replace(rx_highlight, (_all, _, p, _s, _e, content) => {
+            return (p in md_tags)
+                ? _ + element(md_tags[p], { content: highlight(content) })
+                : _all;
+        });
     }
 
     const rx_escape = /\\([\\\|`*_{}\[\]()#+\-~])/g;
@@ -56,22 +64,35 @@ function markdown(src) {
         return str.replace(rx_escape, '$1');
     }
 
-    const stash = [];
     let si = 0;
-
+    const stash = [];
     function freeze(str) {
-        stash[--si] = str;
-        return si + '\uf8ff';
+        stash[++si] = str;
+        return '\uf8ff' + si + '\uf8ff';
     }
 
     src = '\n' + src + '\n';
 
+    const rx_space = /\t|\r|\uf8ff/g;
+    replace(rx_space, '  ');
+
+    function xml_tag_rx([tag, {attr}]) {
+        return `(${RegExp.escape(tag)}${attr.map((attr) => `( ${RegExp.escape(attr)}="[^"]*")?`).join('')})`
+    }
+
+    const xml_tags = {
+        'font': { attr: ['family', 'size'] },
+        'link': { attr: ['href'] },
+    };
+    const rx_xml = RegExp(`<(${Object.entries(xml_tags).map(xml_tag_rx).join('|')})>`, 'g');
+    const rx_xml_close = RegExp(`</(${Object.keys(xml_tags).join('|')})>`, 'g');
+    replace(rx_xml, freeze);
+    replace(rx_xml_close, freeze);
+
     const rx_lt = /</g;
     const rx_gt = />/g;
-    const rx_space = /\t|\r|\uf8ff/g;
     replace(rx_lt, '&lt;');
     replace(rx_gt, '&gt;');
-    replace(rx_space, '  ');
 
     // blockquote
     src = blockquote(src);
@@ -131,8 +152,8 @@ function markdown(src) {
     replace(rx_para, (_all, content) => element('p', { content: unesc(highlight(content)) }));
 
     // stash
-    const rx_stash = /-\d+\uf8ff/g;
-    replace(rx_stash, (all) => stash[parseInt(all)]);
+    const rx_stash = /\uf8ff(\d+)\uf8ff/g;
+    replace(rx_stash, (_all, num) => stash[parseInt(num)]);
 
     return src.trim();
 }
