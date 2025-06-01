@@ -70,7 +70,7 @@ function markdown(src) {
 
     function code_inline(src) {
         return src.replace(rx_code_inline, (_all, _p1, p2) => {
-            stash[--si] = '<code>' + p2.replace(/[<>&]/g, (t) => { return "&" + {"<":"lt",">":"gt","&":"amp"}[t] + ";"; }) + '</code>';
+            stash[--si] = element('code', p2.replace(/[<>&]/g, (t) => { return "&" + {"<":"lt",">":"gt","&":"amp"}[t] + ";"; }));
             return si + '\uf8ff';
         });
     }
