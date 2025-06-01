@@ -71,6 +71,11 @@ function markdown(src) {
     const stash = [];
     let si = 0;
 
+    function freeze(str) {
+        stash[--si] = str;
+        return si + '\uf8ff';
+    }
+
     src = '\n' + src + '\n';
 
     replace(rx_lt, '&lt;');
@@ -88,25 +93,20 @@ function markdown(src) {
     replace(rx_listjoin, '');
 
     // code
-    replace(rx_code, (_all, _p1, _p2, p3, p4) => {
-        stash[--si] = element('pre', element('code', p3||p4.replace(/^    /gm, '')));
-        return si + '\uf8ff';
-    });
+    replace(rx_code, (_all, _p1, _p2, p3, p4) => freeze(element('pre', element('code', p3||p4.replace(/^    /gm, '')))));
 
     // inline code
-    replace(rx_code_inline, (_all, _p1, p2) => {
-        stash[--si] = element('code', p2);
-        return si + '\uf8ff';
-    });
+    replace(rx_code_inline, (_all, _p1, p2) => freeze(element('code', p2)));
 
     // link or image
     replace(rx_link, (_all, _p1, p2, p3, p4, _p5, p6) => {
-        stash[--si] = p4
-            ? p2
-                ? `<img src="${p4}" alt="${p3}"/>`
-                : `<a href="${p4}">` + unesc(highlight(p3)) + '</a>'
-            : p6;
-        return si + '\uf8ff';
+        return freeze(
+            p4
+                ? p2
+                    ? `<img src="${p4}" alt="${p3}"/>`
+                    : `<a href="${p4}">` + unesc(highlight(p3)) + '</a>'
+                : p6
+        );
     });
 
     // table
